@@ -122,6 +122,7 @@ def run_server(application, context):
         server.bind(context.server.port, context.server.ip)
 
     server.start(1)
+    return server
 
 
 def main(arguments=None):
@@ -139,7 +140,7 @@ def main(arguments=None):
 
     with get_context(server_parameters, config, importer) as context:
         application = get_application(context)
-        run_server(application, context)
+        server = run_server(application, context)
 
         try:
             logging.debug('thumbor running at %s:%d' % (context.server.ip, context.server.port))
@@ -147,6 +148,8 @@ def main(arguments=None):
         except KeyboardInterrupt:
             sys.stdout.write('\n')
             sys.stdout.write("-- thumbor closed by user interruption --\n")
+
+    return server
 
 
 if __name__ == "__main__":

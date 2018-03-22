@@ -202,6 +202,20 @@ class ServerTestCase(TestCase):
         server_instance_mock.start.assert_called_with(1)
 
     @mock.patch.object(thumbor.server, 'HTTPServer')
+    def test_run_server_returns_server(self, server_mock):
+        application = mock.Mock()
+        context = mock.Mock()
+        context.server = mock.Mock(fd=None, port=1234, ip='0.0.0.0')
+
+        server_instance_mock = mock.Mock()
+        server_mock.return_value = server_instance_mock
+
+        server = run_server(application, context)
+
+        self.assertIsInstance(server, mock.Mock)
+        self.assertEqual(server, server_instance_mock)
+
+    @mock.patch.object(thumbor.server, 'HTTPServer')
     @mock.patch.object(thumbor.server, 'get_server_parameters')
     @mock.patch('tornado.ioloop.IOLoop.instance', create=True)
     def test_can_run_main(self, ioloop_mock, get_server_parameters_mock, server_mock):
@@ -221,6 +235,32 @@ class ServerTestCase(TestCase):
         ioloop_mock.return_value = ioloop_instance_mock
         main()
         ioloop_instance_mock.start.assert_any_call()
+
+    @mock.patch.object(thumbor.server, 'HTTPServer')
+    @mock.patch.object(thumbor.server, 'get_server_parameters')
+    @mock.patch('tornado.ioloop.IOLoop.instance', create=True)
+    def test_main_returns_server(self, ioloop_mock, get_server_parameters_mock, server_mock):
+        server_parameters = mock.Mock(
+            config_path='./tests/fixtures/thumbor_config_server_test.conf',
+            log_level='DEBUG',
+            debug=False,
+            security_key='sec',
+            app_class='thumbor.app.ThumborServiceApp',
+            fd=None,
+            ip='0.0.0.0',
+            port=1234,
+        )
+        get_server_parameters_mock.return_value = server_parameters
+
+        ioloop_instance_mock = mock.Mock()
+        ioloop_mock.return_value = ioloop_instance_mock
+        server_instance_mock = mock.Mock()
+        server_mock.return_value = server_instance_mock
+
+        server = main()
+
+        self.assertIsInstance(server, mock.Mock)
+        self.assertEqual(server, server_instance_mock)
 
     def cleanup(self):
         ServerTestCase.cleanup_called = True
